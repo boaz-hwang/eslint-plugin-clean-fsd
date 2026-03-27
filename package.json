@@ -1,0 +1,43 @@
+{
+  "name": "eslint-plugin-clean-fsd",
+  "version": "0.1.0",
+  "description": "ESLint plugin for enforcing Clean Feature-Sliced Design architecture in Next.js + Supabase projects",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "keywords": [
+    "eslint",
+    "eslint-plugin",
+    "eslintplugin",
+    "fsd",
+    "feature-sliced-design",
+    "clean-fsd",
+    "architecture",
+    "nextjs",
+    "supabase",
+    "server-components"
+  ],
+  "peerDependencies": {
+    "eslint": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@types/eslint": "^9.6.0",
+    "eslint": "^9.27.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.1"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
