@@ -2,6 +2,8 @@
 
 ESLint plugin for enforcing a Clean Feature-Sliced Design (FSD) architecture in Next.js + Supabase projects.
 
+GitHub: https://github.com/boaz-hwang/eslint-plugin-clean-fsd
+
 ## Why?
 
 This plugin encodes a practical convention for server-first FSD applications:
