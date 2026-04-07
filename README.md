@@ -1,30 +1,31 @@
 # eslint-plugin-clean-fsd
 
-ESLint plugin for enforcing **Clean Feature-Sliced Design (F.S.D)** architecture in Next.js + Supabase projects.
+ESLint plugin for enforcing a Clean Feature-Sliced Design (FSD) architecture in Next.js + Supabase projects.
 
-Clean F.S.D 아키텍처를 ESLint로 자동 강제하는 플러그인입니다.
+## Why?
 
-## Why? / 왜 필요한가?
+This plugin encodes a practical convention for server-first FSD applications:
 
-Clean F.S.D physically separates **READ** and **WRITE** responsibilities through folder structure:
-
+```text
+[widgets / app routes]
+        ↓ consume read models
+    [entities]  ← read-side logic
+        ↑
+    [features]  → write-side interactions
 ```
-[Widgets / app routes]
-        ↓ (READ)
-    [Entities]   ←─(READ)─  [Features]   ←─ write requests
-```
 
-| Layer | Role | Implementation |
-|-------|------|----------------|
-| **entities** | READ-only: ViewModel, DTO, immutable data | React Server Components + `action/get*.ts` |
-| **features** | WRITE: single user interaction that mutates state | `'use client'` forms + `action/create*.ts` |
-| **widgets** | Composed UI combining features/entities | - |
-| **shared** | Common UI, libs, config | - |
+| Layer | Role | Typical Implementation |
+|-------|------|------------------------|
+| **entities** | Read-focused data access, DTOs, view models | React Server Components + `action/get*.ts` or `api/get*.ts` |
+| **features** | Write-focused user interactions that mutate state | `'use client'` UI + `action/create*.ts` or `api/create*.ts` |
+| **widgets** | Composition layer for entities and features | Combined UI for screens and sections |
+| **shared** | Shared UI, libraries, and config | Cross-cutting utilities |
 
-This plugin catches architecture violations **before build**, making it ideal for:
-- Team collaboration with consistent architecture
-- AI "vibe-coding" where LLMs need guardrails
-- Code review automation
+The plugin catches architecture violations before runtime, which is useful for:
+
+- Keeping team conventions consistent
+- Adding guardrails for AI-assisted coding
+- Automating architecture checks in code review
 
 ## Installation
 
@@ -36,7 +37,7 @@ pnpm add -D eslint-plugin-clean-fsd
 
 ## Usage
 
-### Recommended Config (recommended)
+### Recommended Config
 
 ```js
 // eslint.config.mjs
@@ -44,7 +45,7 @@ import cleanFsd from "eslint-plugin-clean-fsd";
 
 export default [
   cleanFsd.configs.recommended,
-  // ... your other configs
+  // ...your other configs
 ];
 ```
 
@@ -73,48 +74,50 @@ export default [
 
 ## Rules
 
-### Error Rules (architecture violations)
+### Error Rules
 
 | Rule | Description | Fixable |
 |------|-------------|---------|
-| [require-use-server-in-actions](#require-use-server-in-actions) | `action/` files must start with `'use server'` | ✅ |
-| [no-mutation-in-entities](#no-mutation-in-entities) | Entities cannot call `.insert()/.update()/.delete()/.upsert()` | - |
-| [no-cross-slice-import](#no-cross-slice-import) | Same-layer slices cannot import each other | - |
+| [require-use-server-in-actions](#require-use-server-in-actions) | `action/` and `api/` files must start with `'use server'` | ✅ |
+| [no-mutation-in-entities](#no-mutation-in-entities) | The `entities` layer cannot call Supabase mutation methods | - |
+| [no-cross-slice-import](#no-cross-slice-import) | A slice cannot import another slice in the same layer | - |
 
-### Warning Rules (convention violations with legitimate edge cases)
+### Warning Rules
 
-| Rule | Description | Edge Cases |
-|------|-------------|------------|
-| [no-use-client-in-entities](#no-use-client-in-entities) | `'use client'` in `entities/ui/` | Infinite scroll, real-time, virtualized lists |
-| [entities-read-only-actions](#entities-read-only-actions) | Entity actions should use read prefixes | `subscribe*`, `count*`, `search*` |
-| [features-write-only-actions](#features-write-only-actions) | Feature actions should use write prefixes | `submit*`, `toggle*`, `archive*` |
-| [no-supabase-in-ui](#no-supabase-in-ui) | UI files shouldn't import `@supabase/*` | Real-time subscriptions |
-| [require-public-api](#require-public-api) | Import through `index.ts`, not deep paths | Type imports, test files |
+These are warnings because there can be legitimate edge cases, but they still flag patterns that usually indicate architectural drift.
+
+| Rule | Description |
+|------|-------------|
+| [no-use-client-in-entities](#no-use-client-in-entities) | Warn on `'use client'` inside `entities/ui/` |
+| [entities-read-only-actions](#entities-read-only-actions) | Entity action exports should use read-oriented prefixes |
+| [features-write-only-actions](#features-write-only-actions) | Feature action exports should use write-oriented prefixes |
+| [no-supabase-in-ui](#no-supabase-in-ui) | Warn when `@supabase/*` is imported directly in `ui/` files |
+| [require-public-api](#require-public-api) | Warn on deep imports into slice internals instead of `index.ts` |
 
 ---
 
 ### require-use-server-in-actions
 
-Server Action 파일에 `'use server'` 지시어를 강제합니다.
+Enforces a top-level `'use server'` directive in FSD action files. The rule treats both `action/` and `api/` as action folders and can auto-fix missing directives.
 
 ```ts
-// ❌ Bad: src/entities/user/action/get-user.ts
+// Bad: src/entities/user/action/get-user.ts
 export async function getUser() { ... }
 
-// ✅ Good: src/entities/user/action/get-user.ts
+// Good: src/entities/user/action/get-user.ts
 'use server';
 export async function getUser() { ... }
 ```
 
 ### no-mutation-in-entities
 
-Entities 레이어에서 Supabase 뮤테이션 메서드 호출을 금지합니다.
+Disallows Supabase mutation methods such as `.insert()`, `.update()`, `.delete()`, and `.upsert()` anywhere in the `entities` layer.
 
 ```ts
-// ❌ Bad: src/entities/user/action/get-user.ts
+// Bad: src/entities/user/action/create-user.ts
 const { data } = await supabase.from('users').insert({ name });
 
-// ✅ Good: move to features layer
+// Good: move the mutation to the features layer
 // src/features/user/action/create-user.ts
 'use server';
 const { data } = await supabase.from('users').insert({ name });
@@ -122,13 +125,13 @@ const { data } = await supabase.from('users').insert({ name });
 
 ### no-cross-slice-import
 
-같은 레이어 내 다른 slice를 직접 import하는 것을 금지합니다.
+Disallows importing a different slice from the same layer. Compose those slices from a higher layer such as `widgets` or `app`.
 
 ```ts
-// ❌ Bad: src/entities/book/ui/BookCard.tsx
+// Bad: src/entities/book/ui/BookCard.tsx
 import { getPartner } from '@/entities/partner';
 
-// ✅ Good: use widgets layer to compose
+// Good: compose them in widgets
 // src/widgets/book-with-partner/ui/BookWithPartner.tsx
 import { BookCard } from '@/entities/book';
 import { PartnerBadge } from '@/entities/partner';
@@ -136,94 +139,105 @@ import { PartnerBadge } from '@/entities/partner';
 
 ### no-use-client-in-entities
 
-Entities UI 컴포넌트에 `'use client'`를 경고합니다. 서버 컴포넌트가 기본입니다.
+Warns when an `entities/ui` file starts with `'use client'`. Entity UI should stay server-first unless there is a clear reason to make it client-side.
 
 ```ts
-// ⚠️ Warning: src/entities/user/ui/UserList.tsx
-'use client'; // Do you really need this?
+// Warning: src/entities/user/ui/UserList.tsx
+'use client';
 
-// ✅ Preferred: Server Component (no directive needed)
+// Preferred: Server Component
 export async function UserList() {
   const users = await getUsers();
-  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>;
+  return <ul>{users.map((user) => <li key={user.id}>{user.name}</li>)}</ul>;
 }
 ```
 
 ### entities-read-only-actions
 
-Entity action 함수명이 READ 접두어(get/fetch/load/search/count/exists/subscribe/find/list/check/query)로 시작하는지 검사합니다.
+Checks that exported functions in `entities` action files start with a read-oriented prefix:
+
+`get`, `fetch`, `load`, `search`, `count`, `exists`, `subscribe`, `find`, `list`, `check`, `query`
 
 ```ts
-// ⚠️ Warning: src/entities/user/action/create-user.ts
+// Warning: src/entities/user/action/create-user.ts
 export async function createUser() { ... } // This belongs in features/
 
-// ✅ Good: src/entities/user/action/get-user.ts
+// Good: src/entities/user/action/get-user.ts
 export async function getUser() { ... }
 ```
 
 ### features-write-only-actions
 
-Feature action 함수명이 WRITE 접두어(create/update/delete/submit/toggle/archive/restore/batch/remove/add/upsert/patch/put/post)로 시작하는지 검사합니다.
+Checks that exported functions in `features` action files start with a write-oriented prefix:
+
+`create`, `update`, `delete`, `submit`, `toggle`, `archive`, `restore`, `batch`, `remove`, `add`, `upsert`, `patch`, `put`, `post`
 
 ```ts
-// ⚠️ Warning: src/features/user/action/get-user.ts
+// Warning: src/features/user/action/get-user.ts
 export async function getUser() { ... } // This belongs in entities/
 
-// ✅ Good: src/features/user/action/create-user.ts
+// Good: src/features/user/action/create-user.ts
 export async function createUser() { ... }
 ```
 
 ### no-supabase-in-ui
 
-UI 컴포넌트에서 `@supabase/*` 직접 import를 경고합니다.
+Warns when a file in a `ui` segment imports `@supabase/*` directly. Keep database access in server actions instead of UI modules.
 
 ```ts
-// ⚠️ Warning: src/entities/user/ui/UserList.tsx
+// Warning: src/entities/user/ui/UserList.tsx
 import { createClient } from '@supabase/supabase-js';
 
-// ✅ Good: import through action layer
+// Good: import through an action file
 // src/entities/user/action/get-users.ts
 import { createClient } from '@supabase/supabase-js';
 ```
 
 ### require-public-api
 
-FSD slice 내부의 deep import를 경고합니다. `index.ts`를 통해 import해야 합니다.
+Warns on deep alias imports into FSD slice internals. Import through the slice public API instead.
 
 ```ts
-// ⚠️ Warning
+// Warning
 import { UserForm } from '@/features/user/ui/UserForm';
 
-// ✅ Good
+// Good
 import { UserForm } from '@/features/user';
 ```
 
-**Options:**
-- `ignoreLayers`: Layers to skip (default: `['shared', 'app']`)
+**Options**
 
-## FSD Layer Structure
+- `ignoreLayers`: layers to skip when checking deep imports. Default: `["shared", "app"]`
 
-```
+## Conventions Recognized by the Plugin
+
+- FSD layers: `app`, `widgets`, `features`, `entities`, `shared`
+- Action folders: `action`, `api`
+- Public API import pattern: `@/layer/slice`
+
+## Example Structure
+
+```text
 src/
-  entities/{domain}/        # READ only
-    model/                  # ViewModels, DTOs
+  entities/{domain}/
+    model/                  # View models, DTOs
     action/                 # 'use server': get*, fetch*, load*
     ui/                     # React Server Components
     lib/                    # Utilities
     index.ts                # Public API
 
-  features/{domain}/        # WRITE (CUD)
+  features/{domain}/
     model/                  # Form types, validation
     action/                 # 'use server': create*, update*, delete*
     ui/                     # 'use client' components
     lib/
     index.ts
 
-  widgets/{name}/           # Composed UI
+  widgets/{name}/
     ui/
     index.ts
 
-  shared/                   # Common utilities
+  shared/
     ui/
     lib/
     config/
@@ -231,7 +245,7 @@ src/
 
 ## Compatibility
 
-- ESLint >= 9.0.0 (flat config)
+- ESLint >= 9.0.0
 - Node.js >= 18.0.0
 
 ## License
