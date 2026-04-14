@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "eslint_plugin_clean_fsd",
+  "project_id": "771d545f-ead3-48cf-93b8-74b693c24c6a"
+}
