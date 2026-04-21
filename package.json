@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-clean-fsd",
-  "version": "0.1.1",
-  "description": "ESLint plugin for enforcing Clean Feature-Sliced Design architecture in Next.js + Supabase projects",
+  "version": "0.2.0",
+  "description": "ESLint plugin for Clean FSD — F.S.D layered on CQRS (read/write) and DDD (single-Aggregate/multi-Aggregate) axes",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/boaz-hwang/eslint-plugin-clean-fsd.git"
@@ -30,6 +30,9 @@
     "fsd",
     "feature-sliced-design",
     "clean-fsd",
+    "cqrs",
+    "ddd",
+    "aggregate",
     "architecture",
     "nextjs",
     "supabase",

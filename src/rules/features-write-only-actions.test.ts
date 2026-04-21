@@ -61,6 +61,21 @@ describe("features-write-only-actions", () => {
           code: "export function getUser() {}",
           filename: "/project/src/entities/user/action/get-user.ts",
         },
+        // commands/ — write prefix required, valid
+        {
+          code: "export function createOrder() {}",
+          filename: "/project/src/features/checkout/commands/create-order.ts",
+        },
+        {
+          code: "export const mergeCart = async () => {};",
+          filename: "/project/src/features/cart-merge/commands/merge.ts",
+        },
+        // queries/ is not checked by this rule (it's a read folder)
+        {
+          code: "export function getCartWithCoupons() {}",
+          filename:
+            "/project/src/features/checkout/queries/cart-with-coupons.ts",
+        },
       ],
       invalid: [
         {
@@ -102,6 +117,17 @@ describe("features-write-only-actions", () => {
                 prefixes:
                   "create/update/delete/submit/toggle/archive/restore/batch/remove/add/upsert/patch/put/post",
               },
+            },
+          ],
+        },
+        // commands/ — read prefix here is invalid
+        {
+          code: "export function getCart() {}",
+          filename: "/project/src/features/checkout/commands/get-cart.ts",
+          errors: [
+            {
+              messageId: "writeOnlyAction",
+              data: { name: "getCart" },
             },
           ],
         },

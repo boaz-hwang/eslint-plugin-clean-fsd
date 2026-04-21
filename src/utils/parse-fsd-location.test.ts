@@ -80,6 +80,67 @@ describe("parseFSDLocation", () => {
     expect(r.slice).toBe("user");
     expect(r.isActionFile).toBe(true);
   });
+
+  it("parses entity selectors folder", () => {
+    const r = parseFSDLocation(
+      "/project/src/entities/cart/selectors/total.ts"
+    );
+    expect(r.layer).toBe("entities");
+    expect(r.slice).toBe("cart");
+    expect(r.segment).toBe("selectors");
+    expect(r.isSelectorFile).toBe(true);
+    expect(r.isActionFile).toBe(false);
+    expect(r.isCommandFile).toBe(false);
+  });
+
+  it("parses entity commands folder", () => {
+    const r = parseFSDLocation(
+      "/project/src/entities/cart/commands/add-item.ts"
+    );
+    expect(r.layer).toBe("entities");
+    expect(r.slice).toBe("cart");
+    expect(r.segment).toBe("commands");
+    expect(r.isCommandFile).toBe(true);
+    expect(r.isSelectorFile).toBe(false);
+  });
+
+  it("parses feature queries folder", () => {
+    const r = parseFSDLocation(
+      "/project/src/features/checkout/queries/cart-with-coupons.ts"
+    );
+    expect(r.layer).toBe("features");
+    expect(r.slice).toBe("checkout");
+    expect(r.segment).toBe("queries");
+    expect(r.isQueryFile).toBe(true);
+    expect(r.isCommandFile).toBe(false);
+  });
+
+  it("parses feature commands folder", () => {
+    const r = parseFSDLocation(
+      "/project/src/features/cart-merge/commands/merge.ts"
+    );
+    expect(r.layer).toBe("features");
+    expect(r.slice).toBe("cart-merge");
+    expect(r.segment).toBe("commands");
+    expect(r.isCommandFile).toBe(true);
+  });
+
+  it("accepts singular folder names for backward compatibility", () => {
+    const selector = parseFSDLocation(
+      "/project/src/entities/cart/selector/total.ts"
+    );
+    expect(selector.isSelectorFile).toBe(true);
+
+    const command = parseFSDLocation(
+      "/project/src/entities/cart/command/add-item.ts"
+    );
+    expect(command.isCommandFile).toBe(true);
+
+    const query = parseFSDLocation(
+      "/project/src/features/checkout/query/list.ts"
+    );
+    expect(query.isQueryFile).toBe(true);
+  });
 });
 
 describe("parseImportSource", () => {

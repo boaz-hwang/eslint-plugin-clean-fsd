@@ -34,11 +34,11 @@ const rule: Rule.RuleModule = {
     type: "suggestion",
     docs: {
       description:
-        "Enforce that feature action files only export write-operation functions (create, update, delete, etc.)",
+        "Enforce that feature action and command files only export write-operation functions (create, update, delete, etc.)",
     },
     messages: {
       writeOnlyAction:
-        "Feature action '{{ name }}' must start with a write prefix ({{ prefixes }}). Read operations belong in entities.",
+        "Feature {{ folderKind }} '{{ name }}' must start with a write prefix ({{ prefixes }}). Read operations belong in entities or features/queries.",
     },
     schema: [],
   },
@@ -46,9 +46,15 @@ const rule: Rule.RuleModule = {
     const filename = context.filename ?? context.getFilename();
     const location = parseFSDLocation(filename);
 
-    if (location.layer !== "features" || !location.isActionFile) {
+    if (location.layer !== "features") {
       return {};
     }
+
+    if (!location.isActionFile && !location.isCommandFile) {
+      return {};
+    }
+
+    const folderKind = location.isCommandFile ? "command" : "action";
 
     return {
       ExportNamedDeclaration(node) {
@@ -62,6 +68,7 @@ const rule: Rule.RuleModule = {
             data: {
               name,
               prefixes: FEATURE_WRITE_PREFIXES.join("/"),
+              folderKind,
             },
           });
         }

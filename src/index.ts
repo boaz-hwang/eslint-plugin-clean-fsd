@@ -5,6 +5,7 @@ import featuresWriteOnlyActions from "./rules/features-write-only-actions";
 import noCrossSliceImport from "./rules/no-cross-slice-import";
 import noMutationInEntities from "./rules/no-mutation-in-entities";
 import noSupabaseInUi from "./rules/no-supabase-in-ui";
+import noUpwardEntityImport from "./rules/no-upward-entity-import";
 import noUseClientInEntities from "./rules/no-use-client-in-entities";
 import requirePublicApi from "./rules/require-public-api";
 import requireUseServerInActions from "./rules/require-use-server-in-actions";
@@ -12,12 +13,13 @@ import requireUseServerInActions from "./rules/require-use-server-in-actions";
 const plugin: ESLint.Plugin = {
   meta: {
     name: "eslint-plugin-clean-fsd",
-    version: "0.1.0",
+    version: "0.2.0",
   },
   rules: {
     "require-use-server-in-actions": requireUseServerInActions,
     "no-mutation-in-entities": noMutationInEntities,
     "no-cross-slice-import": noCrossSliceImport,
+    "no-upward-entity-import": noUpwardEntityImport,
     "no-use-client-in-entities": noUseClientInEntities,
     "entities-read-only-actions": entitiesReadOnlyActions,
     "features-write-only-actions": featuresWriteOnlyActions,
@@ -38,6 +40,7 @@ Object.assign(plugin.configs!, {
       "clean-fsd/require-use-server-in-actions": "error",
       "clean-fsd/no-mutation-in-entities": "error",
       "clean-fsd/no-cross-slice-import": "error",
+      "clean-fsd/no-upward-entity-import": "error",
       // Warning: convention violations (legitimate edge cases exist)
       "clean-fsd/no-use-client-in-entities": "warn",
       "clean-fsd/entities-read-only-actions": "warn",

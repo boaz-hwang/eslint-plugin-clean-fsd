@@ -57,6 +57,15 @@ describe("entities-read-only-actions", () => {
           code: "export function createUser() {}",
           filename: "/project/src/features/user/action/create-user.ts",
         },
+        // selectors/ — read prefix required, valid
+        {
+          code: "export function getTotal() {}",
+          filename: "/project/src/entities/cart/selectors/total.ts",
+        },
+        {
+          code: "export const countItems = () => 0;",
+          filename: "/project/src/entities/cart/selectors/count.ts",
+        },
       ],
       invalid: [
         {
@@ -98,6 +107,17 @@ describe("entities-read-only-actions", () => {
                 prefixes:
                   "get/fetch/load/search/count/exists/subscribe/find/list/check/query",
               },
+            },
+          ],
+        },
+        // selectors/ — write prefix here is invalid
+        {
+          code: "export function addItem() {}",
+          filename: "/project/src/entities/cart/selectors/add-item.ts",
+          errors: [
+            {
+              messageId: "readOnlyAction",
+              data: { name: "addItem" },
             },
           ],
         },

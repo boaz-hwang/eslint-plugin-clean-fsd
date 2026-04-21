@@ -1,10 +1,24 @@
-import { ACTION_FOLDER_NAMES, FSD_LAYERS, type FSDLayer } from "./constants";
+import {
+  ACTION_FOLDER_NAMES,
+  COMMAND_FOLDER_NAMES,
+  FSD_LAYERS,
+  QUERY_FOLDER_NAMES,
+  SELECTOR_FOLDER_NAMES,
+  type FSDLayer,
+} from "./constants";
 
 export interface FSDLocation {
   layer: FSDLayer | null;
   slice: string | null;
   segment: string | null;
+  /** File is in `action/` or `api/` (server-boundary). */
   isActionFile: boolean;
+  /** File is in `selectors/` (single-Aggregate internal read). */
+  isSelectorFile: boolean;
+  /** File is in `commands/` (single-Aggregate internal write or multi-Aggregate write). */
+  isCommandFile: boolean;
+  /** File is in `queries/` (multi-Aggregate read). */
+  isQueryFile: boolean;
   rawPath: string;
 }
 
@@ -20,6 +34,9 @@ export function parseFSDLocation(
     slice: null,
     segment: null,
     isActionFile: false,
+    isSelectorFile: false,
+    isCommandFile: false,
+    isQueryFile: false,
     rawPath: filename,
   };
 
@@ -30,22 +47,36 @@ export function parseFSDLocation(
 
   result.layer = segments[layerIndex] as FSDLayer;
 
+  const setSegmentFlags = (segmentName: string) => {
+    result.segment = segmentName;
+    result.isActionFile = actionFolders.includes(segmentName);
+    result.isSelectorFile = SELECTOR_FOLDER_NAMES.includes(segmentName);
+    result.isCommandFile = COMMAND_FOLDER_NAMES.includes(segmentName);
+    result.isQueryFile = QUERY_FOLDER_NAMES.includes(segmentName);
+  };
+
   // shared and app layers don't always have slices
   const sliceSegment = segments[layerIndex + 1];
   if (sliceSegment) {
-    // If the next segment looks like a known FSD segment (ui, model, action, lib),
-    // then there is no slice (e.g., shared/ui/Button.tsx)
-    const knownSegments = ["ui", "model", "lib", ...actionFolders];
+    // If the next segment looks like a known FSD segment, then there is no slice
+    // (e.g., shared/ui/Button.tsx).
+    const knownSegments = [
+      "ui",
+      "model",
+      "lib",
+      ...actionFolders,
+      ...SELECTOR_FOLDER_NAMES,
+      ...COMMAND_FOLDER_NAMES,
+      ...QUERY_FOLDER_NAMES,
+    ];
     if (knownSegments.includes(sliceSegment)) {
-      result.segment = sliceSegment;
-      result.isActionFile = actionFolders.includes(sliceSegment);
+      setSegmentFlags(sliceSegment);
     } else {
       result.slice = sliceSegment;
 
       const segmentPart = segments[layerIndex + 2];
       if (segmentPart) {
-        result.segment = segmentPart;
-        result.isActionFile = actionFolders.includes(segmentPart);
+        setSegmentFlags(segmentPart);
       }
     }
   }

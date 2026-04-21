@@ -34,11 +34,11 @@ const rule: Rule.RuleModule = {
     type: "suggestion",
     docs: {
       description:
-        "Enforce that entity action files only export read-operation functions (get, fetch, load, etc.)",
+        "Enforce that entity action and selector files only export read-operation functions (get, fetch, load, etc.)",
     },
     messages: {
       readOnlyAction:
-        "Entity action '{{ name }}' must start with a read prefix ({{ prefixes }}). Entities are read-only.",
+        "Entity {{ folderKind }} '{{ name }}' must start with a read prefix ({{ prefixes }}). Entities are read-only.",
     },
     schema: [],
   },
@@ -46,9 +46,15 @@ const rule: Rule.RuleModule = {
     const filename = context.filename ?? context.getFilename();
     const location = parseFSDLocation(filename);
 
-    if (location.layer !== "entities" || !location.isActionFile) {
+    if (location.layer !== "entities") {
       return {};
     }
+
+    if (!location.isActionFile && !location.isSelectorFile) {
+      return {};
+    }
+
+    const folderKind = location.isSelectorFile ? "selector" : "action";
 
     return {
       ExportNamedDeclaration(node) {
@@ -62,6 +68,7 @@ const rule: Rule.RuleModule = {
             data: {
               name,
               prefixes: ENTITY_READ_PREFIXES.join("/"),
+              folderKind,
             },
           });
         }

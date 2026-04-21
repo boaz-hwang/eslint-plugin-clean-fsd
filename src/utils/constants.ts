@@ -55,3 +55,22 @@ export const SUPABASE_MUTATION_METHODS = [
 ];
 
 export const ACTION_FOLDER_NAMES = ["action", "api"];
+
+/**
+ * Folders that hold single-Aggregate internal read logic (selectors/derived state).
+ * Plural form is canonical; singular is accepted for flexibility.
+ */
+export const SELECTOR_FOLDER_NAMES = ["selectors", "selector"];
+
+/**
+ * Folders that hold single-Aggregate internal write logic (memory-state mutations
+ * that uphold invariants via Root methods).
+ * Plural form is canonical; singular is accepted for flexibility.
+ */
+export const COMMAND_FOLDER_NAMES = ["commands", "command"];
+
+/**
+ * Folders that hold multi-Aggregate coordination reads (features layer).
+ * Plural form is canonical; singular is accepted for flexibility.
+ */
+export const QUERY_FOLDER_NAMES = ["queries", "query"];
