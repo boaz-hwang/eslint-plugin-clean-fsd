@@ -54,7 +54,10 @@ bd close <id>         # Complete work
 
 - Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
 - Run `bd prime` for detailed command reference and session close protocol
-- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+- Beads is the source of truth for tasks, ownership, dependencies, acceptance criteria, and verification results.
+- Use claude-mem only for experience capture and recall; do not maintain a second task list with `work_state`.
+- Keep reviewed knowledge in the existing project Wiki and behavior rules in AGENTS.md / skills. Memory summaries are not proof of user approval.
+- Do not add general memories with `bd remember`; preserve and consult existing memories as history.
 
 ## Session Completion
 
