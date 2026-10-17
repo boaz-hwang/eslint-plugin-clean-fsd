@@ -1,6 +1,6 @@
 # Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
+This project uses **bd** (beads) for issue tracking. Run `bd prime --no-memories` for full workflow context.
 
 ## Quick Reference
 
@@ -39,7 +39,7 @@ cp -rf source dest          # NOT: cp -r source dest
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 
-This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+This project uses **bd (beads)** for issue tracking. Run `bd prime --no-memories` to see full workflow context and commands.
 
 ### Quick Reference
 
@@ -53,7 +53,7 @@ bd close <id>         # Complete work
 ### Rules
 
 - Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
-- Run `bd prime` for detailed command reference and session close protocol
+- Run `bd prime --no-memories` for detailed command reference and session close protocol
 - Beads is the source of truth for tasks, ownership, dependencies, acceptance criteria, and verification results.
 - Use claude-mem only for experience capture and recall; do not maintain a second task list with `work_state`.
 - Reviewed knowledge belongs in the existing Wiki; if none exists, use the project's existing docs/, doc/, README, design documents, or ADRs as its knowledge base. Keep drafts distinct from verified conclusions and follow existing review rules; do not create a parallel Wiki or task list.
